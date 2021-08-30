@@ -1,5 +1,4 @@
 import React from 'react';
-import { getBottomSpace } from 'react-native-iphone-x-helper';
 import HighlightCard from '../../components/HighlightCard';
 import {TransactionCard, TransactionCardDataProps} from '../../components/TransactionCard';
 
@@ -55,7 +54,7 @@ const TransactionData:TransactionCardDataProps[] = [
   }
 ]
 
-const Dashboard = () => {
+export const Dashboard = () => {
   return (
     <Container>
       <Header>
@@ -99,5 +98,3 @@ const Dashboard = () => {
     </Container>
   );
 }
-
-export default Dashboard;
