@@ -1,6 +1,6 @@
 import React from 'react';
 import HighlightCard from '../../components/HighlightCard';
-import {TransactionCard, TransactionCardDataProps} from '../../components/TransactionCard';
+import { TransactionCard, TransactionCardDataProps } from '../../components/TransactionCard';
 
 import {
   Container,
@@ -12,16 +12,17 @@ import {
   UserGreeting,
   UserName,
   Icon,
+  LoggoutButton,
   HighlightCards,
   Transactions,
   TransactionsTitle,
   TransactionList
 } from './styles';
 
-const TransactionData:TransactionCardDataProps[] = [
+const TransactionData: TransactionCardDataProps[] = [
   {
-    id:'1',
-    type:'in',
+    id: '1',
+    type: 'in',
     title: "Desenvolvimento de site",
     amount: "R$ 12.000,00",
     category: {
@@ -31,8 +32,8 @@ const TransactionData:TransactionCardDataProps[] = [
     date: "13/04/2020"
   },
   {
-    id:'2',
-    type:'out',
+    id: '2',
+    type: 'out',
     title: "Hamburgueria Pizzy",
     amount: "-R$ 59,90",
     category: {
@@ -42,8 +43,8 @@ const TransactionData:TransactionCardDataProps[] = [
     date: "13/04/2020"
   },
   {
-    id:'3',
-    type:'out',
+    id: '3',
+    type: 'out',
     title: "Aluguel apartamento",
     amount: "-R$ 1.200,00",
     category: {
@@ -66,7 +67,9 @@ export const Dashboard = () => {
               <UserName>Paulo</UserName>
             </User>
           </UserInfo>
-          <Icon name="power" />
+          <LoggoutButton onPress={() => {}}>
+            <Icon name="power" />
+          </LoggoutButton>
         </UserWrapper>
       </Header>
       <HighlightCards>
