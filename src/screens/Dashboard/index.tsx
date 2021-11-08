@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import HighlightCard from '../../components/HighlightCard';
 import { TransactionCard, TransactionCardDataProps } from '../../components/TransactionCard';
 
@@ -19,43 +19,50 @@ import {
   TransactionList
 } from './styles';
 
-const TransactionData: TransactionCardDataProps[] = [
-  {
-    id: '1',
-    type: 'in',
-    title: "Desenvolvimento de site",
-    amount: "R$ 12.000,00",
-    category: {
-      name: 'Vendas',
-      icon: 'dollar-sign'
-    },
-    date: "13/04/2020"
-  },
-  {
-    id: '2',
-    type: 'out',
-    title: "Hamburgueria Pizzy",
-    amount: "-R$ 59,90",
-    category: {
-      name: 'Comida',
-      icon: 'coffee'
-    },
-    date: "13/04/2020"
-  },
-  {
-    id: '3',
-    type: 'out',
-    title: "Aluguel apartamento",
-    amount: "-R$ 1.200,00",
-    category: {
-      name: 'Casa',
-      icon: 'shopping-bag'
-    },
-    date: "13/04/2020"
-  }
-]
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const dataKey = '@gofinances:transactions';
+
 
 export const Dashboard = () => {
+
+  const [data, setData] = useState<TransactionCardDataProps[]>([]);
+
+  const loadTransactions = async () => {
+    const response = await AsyncStorage.getItem(dataKey);
+    const transactions = response ? JSON.parse(response) : [];
+
+    const formattedTransactions: TransactionCardDataProps[] = transactions
+      .map((item: TransactionCardDataProps) => {
+
+        const formattedAmount = Number(item.amount).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+
+        const formattedDate = Intl.DateTimeFormat('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: '2-digit'
+        }).format(new Date(item.date));
+
+        return {
+          id: item.id,
+          name: item.name,
+          amount: formattedAmount,
+          type: item.type,
+          category: item.category,
+          date: formattedDate
+        }
+
+      });
+
+    setData(formattedTransactions);
+  }
+
+  useEffect(() => {
+    loadTransactions();
+  }, [])
+
   return (
     <Container>
       <Header>
@@ -67,7 +74,7 @@ export const Dashboard = () => {
               <UserName>Paulo</UserName>
             </User>
           </UserInfo>
-          <LoggoutButton onPress={() => {}}>
+          <LoggoutButton onPress={() => { }}>
             <Icon name="power" />
           </LoggoutButton>
         </UserWrapper>
@@ -93,7 +100,7 @@ export const Dashboard = () => {
       <Transactions>
         <TransactionsTitle>Listagem</TransactionsTitle>
         <TransactionList
-          data={TransactionData}
+          data={data}
           keyExtractor={item => item.id}
           renderItem={({ item }) => <TransactionCard data={item} />}
         />
