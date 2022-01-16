@@ -31,7 +31,7 @@ const schema = Yup.object().shape({
 
 export const Register = () => {
 
-  const [transactionType, setTransactionType] = useState<'up' | 'down'>('up');
+  const [transactionType, setTransactionType] = useState<'int' | 'out'>('out');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
   const [category, setCategory] = useState({
     key: 'category',
@@ -78,7 +78,7 @@ export const Register = () => {
       await AsyncStorage.setItem(dataKey, JSON.stringify(dataFormatted));
 
       reset();
-      setTransactionType('up');
+      setTransactionType('out');
       setCategory({
         key: 'category',
         name: 'Categoria'
@@ -120,13 +120,13 @@ export const Register = () => {
               <TransactionTypeButton
                 title="Income"
                 type="up"
-                onPress={() => setTransactionType('up')}
-                isActive={transactionType === 'up'} />
+                onPress={() => setTransactionType('in')}
+                isActive={transactionType === 'in'} />
               <TransactionTypeButton
                 title="Outcome"
                 type="down"
-                onPress={() => setTransactionType('down')}
-                isActive={transactionType === 'down'} />
+                onPress={() => setTransactionType('out')}
+                isActive={transactionType === 'out'} />
             </TransactionTypes>
             <CategorySelectButton
               title={category.name}

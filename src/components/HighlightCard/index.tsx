@@ -10,15 +10,15 @@ import {
 } from './styles';
 
 interface HighlightCardProps {
-    type: 'up' | 'down' | 'total',
+    type: 'in' | 'out' | 'total',
     title: string;
     amount: string;
     lastTransaction: string;
 }
 
 const icon = {
-    up: 'arrow-up-circle',
-    down: 'arrow-down-circle',
+    in: 'arrow-up-circle',
+    out: 'arrow-down-circle',
     total: 'dollar-sign'
 }
 

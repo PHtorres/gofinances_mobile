@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { ActivityIndicator } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import HighlightCard from '../../components/HighlightCard';
 import { TransactionCard, TransactionCardDataProps } from '../../components/TransactionCard';
 
@@ -16,52 +18,124 @@ import {
   HighlightCards,
   Transactions,
   TransactionsTitle,
-  TransactionList
+  TransactionList,
+  LoadingContainer
 } from './styles';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from 'styled-components';
 const dataKey = '@gofinances:transactions';
 
+const currecyFormat = (value: number) => {
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+};
+
+const dateFormtat = (date: Date) => {
+  return Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  }).format(date);
+};
+
+interface HighlightCardProps {
+  total: string;
+  subtitle:string;
+}
+
+interface HighlightData {
+  in: HighlightCardProps;
+  out: HighlightCardProps;
+  balance: HighlightCardProps;
+}
+
+enum ScreenStatus {
+  Loading,
+  Ready
+}
+
+const getLastTransactionDate = (transactions: TransactionCardDataProps[]): string => {
+  const lastTimeStamp = Math.max.apply(Math, transactions.map(item => new Date(item.date).getTime()));
+  return `${new Date(lastTimeStamp).getDate()} de ${new Date(lastTimeStamp).toLocaleDateString('pt-BR', {month:'long'})}`;
+}
 
 export const Dashboard = () => {
 
-  const [data, setData] = useState<TransactionCardDataProps[]>([]);
+  const [transactions, setTransactions] = useState<TransactionCardDataProps[]>([]);
+  const [highlightData, setHighlightData] = useState<HighlightData>({} as HighlightData);
+  const [screenStatus, setScreenStatus] = useState<ScreenStatus>(ScreenStatus.Loading);
+  const theme = useTheme();
+
+  let inTotal = 0;
+  let outTotal = 0;
+
 
   const loadTransactions = async () => {
+    setScreenStatus(ScreenStatus.Loading);
     const response = await AsyncStorage.getItem(dataKey);
-    const transactions = response ? JSON.parse(response) : [];
+    const transactionsStoraged = response ? JSON.parse(response) as TransactionCardDataProps[] : [] as TransactionCardDataProps[];
 
-    const formattedTransactions: TransactionCardDataProps[] = transactions
+    const formattedTransactions: TransactionCardDataProps[] = transactionsStoraged
       .map((item: TransactionCardDataProps) => {
 
-        const formattedAmount = Number(item.amount).toLocaleString('pt-BR', {
-          style: 'currency',
-          currency: 'BRL'
-        });
+        if (item.transactionType === 'in') inTotal += Number(item.amount);
+        if (item.transactionType === 'out') outTotal += Number(item.amount);
 
-        const formattedDate = Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: '2-digit'
-        }).format(new Date(item.date));
+        const formattedAmount = currecyFormat(Number(item.amount));
+        const formattedDate = dateFormtat(new Date(item.date));
 
         return {
           id: item.id,
           name: item.name,
           amount: formattedAmount,
-          type: item.type,
+          transactionType: item.transactionType,
           category: item.category,
           date: formattedDate
         }
 
       });
 
-    setData(formattedTransactions);
+    const lastTransactionInDate = getLastTransactionDate(transactionsStoraged.filter(item => item.transactionType === 'in'));
+    const lastTransactionOutDate = getLastTransactionDate(transactionsStoraged.filter(item => item.transactionType === 'out'));
+    const lastTransactionAllDate = getLastTransactionDate(transactionsStoraged);
+    const balanceInterval = `01 à ${lastTransactionAllDate}`;
+
+    setHighlightData({
+      in: {
+        total: currecyFormat(inTotal),
+        subtitle:`Última entrada ${lastTransactionInDate}`
+      },
+      out: {
+        total: currecyFormat(outTotal),
+        subtitle:`Última saída ${lastTransactionOutDate}`
+      },
+      balance: {
+        total: currecyFormat(inTotal - outTotal),
+        subtitle:balanceInterval
+      }
+    });
+
+    inTotal = 0;
+    outTotal = 0;
+
+    setTransactions(formattedTransactions);
+    setScreenStatus(ScreenStatus.Ready);
   }
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     loadTransactions();
-  }, [])
+  }, []))
+
+  if (screenStatus === ScreenStatus.Loading) {
+    return (
+      <LoadingContainer>
+        <ActivityIndicator color={theme.colors.primary} size='large' />
+      </LoadingContainer>
+    )
+  }
 
   return (
     <Container>
@@ -81,26 +155,26 @@ export const Dashboard = () => {
       </Header>
       <HighlightCards>
         <HighlightCard
-          type="up"
+          type="in"
           title="Entradas"
-          amount="R$ 17.400,00"
-          lastTransaction="última entrada dia 13 de abril" />
+          amount={highlightData.in.total}
+          lastTransaction={highlightData.in.subtitle} />
         <HighlightCard
-          type="down"
+          type="out"
           title="Saídas"
-          amount="R$ 1.259,00"
-          lastTransaction="última saída dia 3 de abril" />
+          amount={highlightData.out.total}
+          lastTransaction={highlightData.out.subtitle}  />
         <HighlightCard
           type="total"
           title="Total"
-          amount="R$ 16.141,00"
-          lastTransaction="01 a 16 de abril" />
+          amount={highlightData.balance.total}
+          lastTransaction={highlightData.balance.subtitle}  />
       </HighlightCards>
 
       <Transactions>
         <TransactionsTitle>Listagem</TransactionsTitle>
         <TransactionList
-          data={data}
+          data={transactions}
           keyExtractor={item => item.id}
           renderItem={({ item }) => <TransactionCard data={item} />}
         />

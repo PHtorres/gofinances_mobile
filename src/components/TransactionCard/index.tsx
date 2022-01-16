@@ -19,7 +19,7 @@ interface Category {
 
 export interface TransactionCardDataProps {
     id: string;
-    type: 'in' | 'out';
+    transactionType: 'in' | 'out';
     name: string;
     amount: string;
     category: string;
@@ -32,13 +32,14 @@ interface TransactionCardProps {
 
 export const TransactionCard = ({ data }: TransactionCardProps) => {
 
-    const { type, name, amount, category, date } = data;
+    const { transactionType, name, amount, category, date } = data;
     const categoryData = categories.find(item => item.key === category)!;
+    const formattedAmount = transactionType === 'out'?`-${amount}`:amount;
 
     return (
         <Container>
             <Title>{name}</Title>
-            <Amount type={type}>{amount}</Amount>
+            <Amount type={transactionType}>{formattedAmount}</Amount>
             <Footer>
                 <Category>
                     <Icon name={categoryData.icon} />
