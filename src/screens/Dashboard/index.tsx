@@ -26,7 +26,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from 'styled-components';
 const dataKey = '@gofinances:transactions';
 
-const currecyFormat = (value: number) => {
+export const currecyFormat = (value: number) => {
   return value.toLocaleString('pt-BR', {
     style: 'currency',
     currency: 'BRL'
